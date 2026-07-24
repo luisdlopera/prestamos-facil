@@ -1,0 +1,35 @@
+# --- Java / Gradle ---
+apps/backend/.gradle/
+apps/backend/build/
+apps/backend/bin/
+apps/backend/out/
+*.jar
+*.war
+!gradle/wrapper/gradle-wrapper.jar
+
+# --- Node / pnpm ---
+apps/frontend/node_modules/
+apps/frontend/dist/
+apps/frontend/.astro/
+apps/frontend/.cache/
+*.tsbuildinfo
+
+# --- IDE ---
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- Env ---
+.env
+.env.local
+*.env.local
+
+# --- Docker ---
+infrastructure/docker/data/

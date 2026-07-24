@@ -1,0 +1,34 @@
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: prestamos-facil-db
+    restart: unless-stopped
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    environment:
+      POSTGRES_DB: ${DB_NAME:-prestamos_facil}
+      POSTGRES_USER: ${DB_USERNAME:-prestamos}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      TZ: UTC
+      PGTZ: UTC
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-prestamos} -d ${DB_NAME:-prestamos_facil}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  mailpit:
+    image: axllent/mailpit:v1.21
+    container_name: prestamos-facil-mailpit
+    restart: unless-stopped
+    ports:
+      - "${MAILPIT_SMTP_PORT:-4025}:1025"
+      - "${MAILPIT_UI_PORT:-4050}:8025"
+
+volumes:
+  pg_data:
+    name: prestamos-facil-pg-data
