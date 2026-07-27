@@ -1,0 +1,76 @@
+---
+import Header from "../components/astro/Header.astro";
+import { SidebarClient } from "../components/react/SidebarClient";
+import { HeaderActions } from "../components/react/HeaderActions";
+import { SidebarLayoutAdapter } from "../components/react/SidebarLayoutAdapter";
+import { Providers } from "../components/react/Providers";
+import "../styles/global.css";
+import "../components/react/SidebarClient.css";
+
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="es-CO" data-theme="light" style="--sidebar-width: 250px">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Préstamos Fácil — Panel Administrativo Financiero</title>
+    <meta name="description" content="Sistema de gestión de solicitudes de préstamos y clientes" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body
+    class="bg-slate-50 text-slate-900 font-sans antialiased selection:bg-blue-500 selection:text-white min-h-screen"
+  >
+    <Providers client:load currentPath={currentPath}>
+      <SidebarClient client:load />
+      <SidebarLayoutAdapter client:load />
+      <div class="main-wrapper">
+        <Header>
+          <Fragment slot="actions">
+            <HeaderActions client:load />
+          </Fragment>
+        </Header>
+        <main class="main-content">
+          <slot />
+        </main>
+      </div>
+    </Providers>
+  </body>
+</html>
+
+<style>
+  :root {
+    --sidebar-width: 250px;
+  }
+
+  .main-wrapper {
+    margin-left: var(--sidebar-width);
+    min-height: 100vh;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    transition: margin-left 0.3s ease;
+  }
+
+  .main-content {
+    flex: 1;
+    min-width: 0;
+    padding: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .main-wrapper {
+      margin-left: 0;
+    }
+
+    .main-content {
+      padding: 1rem;
+    }
+  }
+</style>

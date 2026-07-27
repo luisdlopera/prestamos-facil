@@ -1,0 +1,132 @@
+---
+import {
+  LayoutDashboard,
+  Users,
+  UserPlus,
+  FileText,
+  FilePlus,
+  Wallet,
+  BarChart3,
+} from "lucide-react";
+
+const menuItems = [
+  { href: "/dashboard", label: "Dashboard", Icon: LayoutDashboard },
+  { href: "/customers", label: "Clientes", Icon: Users },
+  { href: "/register-customer", label: "Registrar Cliente", Icon: UserPlus },
+  { href: "/loan-applications", label: "Solicitudes", Icon: FileText },
+  { href: "/new-loan-application", label: "Nueva Solicitud", Icon: FilePlus },
+  { href: "/loans", label: "Préstamos", Icon: Wallet },
+  { href: "/reports", label: "Reportes", Icon: BarChart3 },
+];
+
+const currentPath = Astro.url.pathname;
+---
+
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <strong>Prestamos Fácil</strong>
+  </div>
+  <nav>
+    <ul>
+      {
+        menuItems.map(({ href, label, Icon }) => (
+          <li>
+            <a
+              href={href}
+              class="sidebar-link"
+              aria-current={currentPath === href ? "page" : undefined}
+            >
+              <span class="icon">
+                <Icon size={18} />
+              </span>
+              <span class="label">{label}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</aside>
+
+<style>
+  .sidebar {
+    width: 250px;
+    background: var(--color-background);
+    border-right: 1px solid oklch(0.87 0 0);
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 1rem 0;
+    overflow-y: auto;
+  }
+
+  .sidebar-header {
+    padding: 0.75rem 1rem 1.25rem;
+    font-size: 1.1rem;
+    border-bottom: 1px solid oklch(0.9 0 0);
+    margin-bottom: 0.5rem;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  li {
+    margin-bottom: 0.125rem;
+  }
+
+  .sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 1rem;
+    border-radius: 0;
+    color: var(--color-foreground);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background-color 0.15s;
+  }
+
+  .sidebar-link:hover {
+    background-color: oklch(0.93 0.01 260);
+  }
+
+  .sidebar-link[aria-current="page"] {
+    background-color: oklch(0.93 0.03 250);
+    font-weight: 600;
+  }
+
+  .icon {
+    width: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 768px) {
+    .sidebar {
+      width: 100%;
+      height: auto;
+      position: relative;
+      border-right: none;
+      border-bottom: 1px solid oklch(0.87 0 0);
+    }
+    ul {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .sidebar-link .label {
+      display: none;
+    }
+    .sidebar-link {
+      padding: 0.6rem;
+    }
+  }
+</style>
