@@ -1,0 +1,10 @@
+---
+import AppLayout from "../layouts/AppLayout.astro";
+import { RegisterCustomerPage } from "../features/customers";
+---
+
+<AppLayout>
+  <section>
+    <RegisterCustomerPage client:load />
+  </section>
+</AppLayout>

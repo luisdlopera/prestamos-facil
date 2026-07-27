@@ -1,0 +1,26 @@
+---
+import { RelationalDiagramContainer } from "../features/relational-model";
+import "../styles/global.css";
+---
+
+<!doctype html>
+<html lang="es-CO" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modelo Relacional — Préstamos Fácil</title>
+    <meta
+      name="description"
+      content="Diagrama relacional interactivo de la base de datos de Préstamos Fácil con notación Pata de Gallina (Crow's Foot)"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen overflow-hidden">
+    <RelationalDiagramContainer client:load />
+  </body>
+</html>

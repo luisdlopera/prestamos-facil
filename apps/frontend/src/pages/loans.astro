@@ -1,0 +1,16 @@
+---
+import AppLayout from "../layouts/AppLayout.astro";
+import { LoansTable } from "../features/loans";
+---
+
+<AppLayout>
+  <section>
+    <div class="mb-6 flex items-start justify-between gap-4">
+      <div class="space-y-1">
+        <h1 class="text-2xl font-bold text-foreground">Préstamos</h1>
+        <p class="text-sm text-muted">Seguimiento de préstamos activos</p>
+      </div>
+    </div>
+    <LoansTable client:load />
+  </section>
+</AppLayout>

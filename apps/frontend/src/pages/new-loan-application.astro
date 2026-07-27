@@ -1,0 +1,10 @@
+---
+import AppLayout from "../layouts/AppLayout.astro";
+import { CreateLoanApplicationPage } from "../features/loan-applications/ui/CreateLoanApplicationPage";
+---
+
+<AppLayout>
+  <section>
+    <CreateLoanApplicationPage client:load />
+  </section>
+</AppLayout>

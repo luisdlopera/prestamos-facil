@@ -1,0 +1,24 @@
+---
+import { LoginPage } from "../features/auth";
+import { Providers } from "../components/react/Providers";
+import "../styles/global.css";
+
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="es-CO" class="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iniciar Sesión - Prestamos Fácil</title>
+  </head>
+  <body
+    class="flex min-h-screen items-center justify-center bg-white text-black"
+    style="background-color: white !important;"
+  >
+    <Providers client:load currentPath={currentPath}>
+      <LoginPage client:load />
+    </Providers>
+  </body>
+</html>

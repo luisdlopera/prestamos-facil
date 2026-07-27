@@ -1,0 +1,14 @@
+---
+import AppLayout from "../layouts/AppLayout.astro";
+import { ApprovedLoansSummary } from "../features/reports/ui/ApprovedLoansSummary";
+---
+
+<AppLayout>
+  <section>
+    <div class="mb-6 space-y-1">
+      <h1 class="text-2xl font-bold text-foreground">Reportes</h1>
+      <p class="text-sm text-muted">Reporte de préstamos aprobados</p>
+    </div>
+    <ApprovedLoansSummary client:load />
+  </section>
+</AppLayout>

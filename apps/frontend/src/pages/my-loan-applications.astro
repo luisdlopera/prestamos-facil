@@ -1,0 +1,17 @@
+---
+import AppLayout from "../layouts/AppLayout.astro";
+import { MyLoanApplicationsPage } from "../features/loan-applications";
+---
+
+<AppLayout>
+  <section>
+    <div class="mb-6 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+      <div class="space-y-1">
+        <h1 class="text-2xl font-bold text-foreground">Mis Solicitudes</h1>
+        <p class="text-sm text-muted">Historial de tus solicitudes de préstamo</p>
+      </div>
+    </div>
+
+    <MyLoanApplicationsPage client:load />
+  </section>
+</AppLayout>

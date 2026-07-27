@@ -1,0 +1,14 @@
+---
+import AppLayout from "../layouts/AppLayout.astro";
+import { ProfilePage } from "../features/auth";
+---
+
+<AppLayout>
+  <section>
+    <div class="mb-6 space-y-1">
+      <h1 class="text-2xl font-bold text-foreground">Mi Perfil</h1>
+      <p class="text-sm text-muted">Gestione sus datos personales y contraseña</p>
+    </div>
+    <ProfilePage client:load />
+  </section>
+</AppLayout>
