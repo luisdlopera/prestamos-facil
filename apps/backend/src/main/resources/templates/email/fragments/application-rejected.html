@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<body>
+  <div th:fragment="content">
+    <p>Estimado(a) <strong th:text="${customerName}">Cliente</strong>,</p>
+    <p>Sentimos informarte que tu solicitud de <strong th:text="${loanTypeName}">Préstamo</strong> no ha sido aprobada en esta ocasión.</p>
+    <p>Te invitamos a contactar con un asesor para conocer más detalles o intentarlo nuevamente en 6 meses.</p>
+  </div>
+</body>
+</html>

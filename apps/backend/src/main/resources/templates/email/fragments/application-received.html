@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<body>
+  <div th:fragment="content">
+    <p>Hola <strong th:text="${customerName}">Cliente</strong>,</p>
+    <p>Hemos recibido tu solicitud para un <strong th:text="${loanTypeName}">Préstamo</strong> por valor de <strong th:text="${amount}">$0</strong>.</p>
+    <p>Nuestro equipo iniciara el estudio de credito y te informaremos por este medio.</p>
+    <p>Numero de solicitud: <strong th:text="${applicationId}">00000000</strong></p>
+  </div>
+</body>
+</html>

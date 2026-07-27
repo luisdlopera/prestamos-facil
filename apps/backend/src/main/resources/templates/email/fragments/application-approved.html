@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<body>
+  <div th:fragment="content">
+    <p>Excelentes noticias <strong th:text="${customerName}">Cliente</strong>!</p>
+    <p>Tu solicitud de <strong th:text="${loanTypeName}">Préstamo</strong> por <strong th:text="${amount}">$0</strong> ha sido <strong>APROBADA</strong>.</p>
+    <p>El desembolso se realizará en las próximas horas según las condiciones pactadas.</p>
+  </div>
+</body>
+</html>
