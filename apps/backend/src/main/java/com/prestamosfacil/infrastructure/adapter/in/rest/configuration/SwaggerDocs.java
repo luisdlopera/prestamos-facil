@@ -55,7 +55,7 @@ public final class SwaggerDocs {
     // ========== Operation summaries & descriptions ==========
     // Auth
     public static final String OP_REGISTER_SUM = "Registrar nuevo cliente";
-    public static final String OP_REGISTER_DESC = "Crea una cuenta de cliente con datos personales y credenciales";
+    public static final String OP_REGISTER_DESC = "Crea una cuenta de cliente con datos personales y credenciales. No crea sesión; use /auth/login después del registro";
     public static final String OP_LOGIN_SUM = "Iniciar sesión";
     public static final String OP_LOGIN_DESC = "Autentica con correo y contraseña, devuelve cookies httpOnly";
     public static final String OP_REFRESH_SUM = "Renovar token de acceso";
@@ -87,7 +87,7 @@ public final class SwaggerDocs {
 
     // Customers
     public static final String OP_CUSTOMER_CREATE_SUM = "Registrar cliente";
-    public static final String OP_CUSTOMER_CREATE_DESC = "Crea un nuevo cliente en el sistema con sus datos personales y financieros (requiere rol ADMIN o STAFF)";
+    public static final String OP_CUSTOMER_CREATE_DESC = "Crea un nuevo cliente en el sistema con sus datos personales y financieros (requiere CUSTOMER_CREATE)";
     public static final String OP_CUSTOMER_FIND_BY_ID_SUM = "Obtener cliente por ID";
     public static final String OP_CUSTOMER_FIND_BY_ID_DESC = "Devuelve los datos de un cliente específico. Clientes solo ven su propio perfil";
     public static final String OP_CUSTOMER_FIND_ALL_SUM = "Listar clientes";
@@ -101,11 +101,11 @@ public final class SwaggerDocs {
     public static final String OP_LOAN_APP_FIND_BY_ID_SUM = "Obtener solicitud por ID";
     public static final String OP_LOAN_APP_FIND_BY_ID_DESC = "Devuelve los detalles de una solicitud de préstamo específica. Clientes solo ven sus propias solicitudes";
     public static final String OP_LOAN_APP_AUTO_EVAL_SUM = "Evaluación automática";
-    public static final String OP_LOAN_APP_AUTO_EVAL_DESC = "Ejecuta el stored procedure sp_evaluate_loan_application para evaluar la solicitud automáticamente (requiere rol STAFF)";
+    public static final String OP_LOAN_APP_AUTO_EVAL_DESC = "Ejecuta el stored procedure sp_evaluate_loan_application (requiere LOAN_APPLICATION_EVALUATE)";
     public static final String OP_LOAN_APP_APPROVE_SUM = "Aprobar solicitud";
-    public static final String OP_LOAN_APP_APPROVE_DESC = "Aprueba manualmente una solicitud de préstamo y genera el préstamo asociado (requiere rol STAFF)";
+    public static final String OP_LOAN_APP_APPROVE_DESC = "Aprueba manualmente una solicitud y genera el préstamo asociado (requiere LOAN_APPLICATION_APPROVE)";
     public static final String OP_LOAN_APP_REJECT_SUM = "Rechazar solicitud";
-    public static final String OP_LOAN_APP_REJECT_DESC = "Rechaza una solicitud de préstamo con un motivo (requiere rol STAFF)";
+    public static final String OP_LOAN_APP_REJECT_DESC = "Rechaza una solicitud con un motivo (requiere LOAN_APPLICATION_REJECT)";
 
     // Loans
     public static final String OP_LOAN_FIND_ALL_SUM = "Listar préstamos";
@@ -135,7 +135,7 @@ public final class SwaggerDocs {
 
     // Reports
     public static final String OP_REPORT_APPROVED_TOTAL_SUM = "Total de préstamos aprobados";
-    public static final String OP_REPORT_APPROVED_TOTAL_DESC = "Devuelve el monto total aprobado, la cantidad de préstamos y la fecha del reporte (requiere rol ADMIN o STAFF)";
+    public static final String OP_REPORT_APPROVED_TOTAL_DESC = "Devuelve el monto total aprobado, la cantidad de préstamos y la fecha del reporte (requiere REPORT_APPROVED_LOANS_READ)";
 
     // ========== @ApiResponse descriptions ==========
     public static final String RESP_STAFF_REGISTER_201 = "Staff registrado exitosamente";

@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/v1/loan-applications")
@@ -56,6 +57,7 @@ public class LoanApplicationController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('LOAN_APPLICATION_CREATE_SELF','LOAN_APPLICATION_CREATE_FOR_CUSTOMER')")
     @Operation(summary = SwaggerDocs.OP_LOAN_APP_CREATE_SUM, description = SwaggerDocs.OP_LOAN_APP_CREATE_DESC)
     public ResponseEntity<ApiResponse<LoanApplicationResponse>> create(
             @AuthenticationPrincipal AuthPrincipal principal,
@@ -71,6 +73,7 @@ public class LoanApplicationController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('LOAN_APPLICATION_READ_SELF','LOAN_APPLICATION_READ_ALL')")
     @Operation(summary = SwaggerDocs.OP_LOAN_APP_FIND_ALL_SUM, description = SwaggerDocs.OP_LOAN_APP_FIND_ALL_DESC)
     public ResponseEntity<PaginatedResponse<LoanApplicationResponse>> findAll(
             @AuthenticationPrincipal AuthPrincipal principal,
@@ -93,6 +96,7 @@ public class LoanApplicationController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('LOAN_APPLICATION_READ_SELF','LOAN_APPLICATION_READ_ALL')")
     @Operation(summary = SwaggerDocs.OP_LOAN_APP_FIND_BY_ID_SUM, description = SwaggerDocs.OP_LOAN_APP_FIND_BY_ID_DESC)
     public ResponseEntity<ApiResponse<LoanApplicationResponse>> findById(
             @AuthenticationPrincipal AuthPrincipal principal, @PathVariable UUID id) {
@@ -105,6 +109,7 @@ public class LoanApplicationController {
     }
 
     @PostMapping("/{id}/automatic-evaluation")
+    @PreAuthorize("hasAuthority('LOAN_APPLICATION_EVALUATE')")
     @Operation(summary = SwaggerDocs.OP_LOAN_APP_AUTO_EVAL_SUM, description = SwaggerDocs.OP_LOAN_APP_AUTO_EVAL_DESC)
     public ResponseEntity<ApiResponse<AutomaticEvaluationResponse>> automaticEvaluation(@PathVariable UUID id) {
         AutomaticEvaluationOutcome outcome = loanApplicationUseCase.evaluateAutomatically(id);
@@ -114,6 +119,7 @@ public class LoanApplicationController {
     }
 
     @PostMapping("/{id}/approve")
+    @PreAuthorize("hasAuthority('LOAN_APPLICATION_APPROVE')")
     @Operation(summary = SwaggerDocs.OP_LOAN_APP_APPROVE_SUM, description = SwaggerDocs.OP_LOAN_APP_APPROVE_DESC)
     public ResponseEntity<ApiResponse<LoanApplicationResponse>> approve(@PathVariable UUID id) {
         LoanApplication application = loanApplicationUseCase.approve(id);
@@ -121,6 +127,7 @@ public class LoanApplicationController {
     }
 
     @PostMapping("/{id}/reject")
+    @PreAuthorize("hasAuthority('LOAN_APPLICATION_REJECT')")
     @Operation(summary = SwaggerDocs.OP_LOAN_APP_REJECT_SUM, description = SwaggerDocs.OP_LOAN_APP_REJECT_DESC)
     public ResponseEntity<ApiResponse<LoanApplicationResponse>> reject(
             @PathVariable UUID id, @Valid @RequestBody RejectRequest request) {

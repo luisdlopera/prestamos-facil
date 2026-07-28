@@ -45,8 +45,27 @@ class AuthControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(
             new AuthController(userAuthUseCase, profileUseCase, authCookieFactory,
                 passwordResetUseCase, authResponseMapper))
+            .setCustomArgumentResolvers(new org.springframework.web.method.support.HandlerMethodArgumentResolver() {
+                @Override
+                public boolean supportsParameter(org.springframework.core.MethodParameter parameter) {
+                    return parameter.hasParameterAnnotation(org.springframework.security.core.annotation.AuthenticationPrincipal.class);
+                }
+                @Override
+                public Object resolveArgument(org.springframework.core.MethodParameter parameter,
+                                             org.springframework.web.method.support.ModelAndViewContainer mavContainer,
+                                             org.springframework.web.context.request.NativeWebRequest webRequest,
+                                             org.springframework.web.bind.support.WebDataBinderFactory binderFactory) {
+                    java.security.Principal principal = webRequest.getUserPrincipal();
+                    if (principal instanceof org.springframework.security.authentication.AbstractAuthenticationToken token) {
+                        return token.getPrincipal();
+                    }
+                    return null;
+                }
+            })
             .build();
     }
+
+
 
     @Test
     void shouldRegister() throws Exception {
@@ -145,4 +164,36 @@ class AuthControllerTest {
             .content(json))
             .andExpect(status().isOk());
     }
+
+    @Test
+    void shouldReturnProfileOnMe() throws Exception {
+        UUID customerId = UUID.randomUUID();
+        Customer customer = Customer.builder()
+            .id(customerId)
+            .firstName("Cliente")
+            .lastName("Demo")
+            .email(new EmailAddress("cliente@prestamosfacil.com"))
+            .documentNumber(new DocumentNumber("CC", "1098765432"))
+            .baseSalary(new Money(new BigDecimal("5000000")))
+            .user(com.prestamosfacil.domain.user.models.User.builder()
+                .id(customerId)
+                .email(new EmailAddress("cliente@prestamosfacil.com"))
+                .role("CUSTOMER")
+                .build())
+            .build();
+        when(profileUseCase.findById(customerId)).thenReturn(java.util.Optional.of(customer));
+
+        com.prestamosfacil.infrastructure.security.principal.AuthPrincipal principal =
+            new com.prestamosfacil.infrastructure.security.principal.AuthPrincipal(
+                customerId, "cliente@prestamosfacil.com",
+                com.prestamosfacil.domain.user.enums.UserType.CUSTOMER,
+                java.util.List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_CUSTOMER"))
+            );
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/v1/auth/me")
+            .principal(new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(principal, null, principal.authorities())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.email").value("cliente@prestamosfacil.com"));
+    }
 }
+

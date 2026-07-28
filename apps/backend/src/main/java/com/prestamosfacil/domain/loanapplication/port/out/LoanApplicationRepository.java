@@ -11,6 +11,7 @@ import java.util.UUID;
 public interface LoanApplicationRepository {
 
     Optional<LoanApplication> findById(UUID id);
+    Optional<LoanApplication> findByIdAndCustomerId(UUID id, UUID customerId);
     List<LoanApplication> findAllById(Collection<UUID> ids);
     LoanApplication save(LoanApplication application);
     PageResult<LoanApplication> findAll(int page, int perPage, String sortBy, String sortDir);

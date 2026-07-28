@@ -10,7 +10,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface CustomerJpaRepository extends JpaRepository<CustomerEntity, UUID> {
-    Optional<CustomerEntity> findByUserId(UUID userId);
+    @Query("SELECT c FROM CustomerEntity c JOIN FETCH c.user u WHERE u.id = :userId")
+    Optional<CustomerEntity> findByUserId(@Param("userId") UUID userId);
     @Query("SELECT c FROM CustomerEntity c JOIN c.user u WHERE LOWER(u.email) = LOWER(:email)")
     Optional<CustomerEntity> findByEmail(@Param("email") String email);
     boolean existsByDocumentNumber(String documentNumber);

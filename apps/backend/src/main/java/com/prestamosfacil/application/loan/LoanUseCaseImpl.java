@@ -20,6 +20,7 @@ import java.util.UUID;
 import com.prestamosfacil.domain.shared.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Service
 public class LoanUseCaseImpl implements LoanUseCase {
@@ -87,13 +88,14 @@ public class LoanUseCaseImpl implements LoanUseCase {
     }
 
     @Override
+    @PreAuthorize("hasAuthority('LOAN_READ_SELF')")
     @Transactional(readOnly = true)
     public Optional<Loan> findByIdForUser(UUID loanId, UUID customerId) {
-        var loan = findById(loanId);
-        if (loan.isPresent() && !loan.get().getCustomer().getId().equals(customerId)) {
-            return Optional.empty();
-        }
-        return loan;
+        return loanRepository.findByIdAndCustomerId(loanId, customerId)
+            .or(() -> loanRepository.findById(loanId)
+                .filter(loan -> loan.getCustomer().getId().equals(customerId)))
+            .or(() -> loanRepository.findByLoanApplicationId(loanId)
+                .filter(loan -> loan.getCustomer().getId().equals(customerId)));
     }
 
     @Override

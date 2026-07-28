@@ -14,6 +14,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.Set;
 
 @Service
 public class StaffUseCaseImpl implements StaffUseCase {
@@ -42,11 +43,15 @@ public class StaffUseCaseImpl implements StaffUseCase {
             throw new ApplicationException(Messages.AUTH_EMAIL_ALREADY_STAFF);
         }
 
+        String normalizedRole = role == null ? "ANALYST" : role.trim().toUpperCase();
+        if (!Set.of("ANALYST", "CREDIT_ANALYST", "SUPERVISOR", "AUDITOR").contains(normalizedRole)) {
+            throw new ApplicationException(Messages.ACCESS_DENIED);
+        }
         User user = User.builder()
                 .firstName(name)
                 .email(new EmailAddress(emailNorm))
                 .passwordHash(passwordEncoder.encode(password))
-                .role(role)
+                .role(normalizedRole)
                 .build();
 
         return userRepository.save(user);

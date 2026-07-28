@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/v1/loans")
@@ -55,6 +56,7 @@ public class LoanController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('LOAN_READ_SELF','LOAN_READ_ALL')")
     @Operation(summary = SwaggerDocs.OP_LOAN_FIND_ALL_SUM, description = SwaggerDocs.OP_LOAN_FIND_ALL_DESC)
     public ResponseEntity<PaginatedResponse<LoanResponse>> findAll(
             @AuthenticationPrincipal AuthPrincipal principal,
@@ -76,6 +78,7 @@ public class LoanController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('LOAN_READ_SELF','LOAN_READ_ALL')")
     @Operation(summary = SwaggerDocs.OP_LOAN_FIND_BY_ID_SUM, description = SwaggerDocs.OP_LOAN_FIND_BY_ID_DESC)
     public ResponseEntity<ApiResponse<LoanResponse>> findById(
             @AuthenticationPrincipal AuthPrincipal principal, @PathVariable UUID id) {
@@ -88,6 +91,7 @@ public class LoanController {
     }
 
     @GetMapping("/{id}/payment-plan")
+    @PreAuthorize("hasAnyAuthority('PAYMENT_PLAN_READ_SELF','PAYMENT_PLAN_READ_ALL')")
     @Operation(summary = SwaggerDocs.OP_LOAN_PAYMENT_PLAN_SUM, description = SwaggerDocs.OP_LOAN_PAYMENT_PLAN_DESC)
     public ResponseEntity<ApiResponse<List<PaymentInstallmentResponse>>> getPaymentPlan(
             @AuthenticationPrincipal AuthPrincipal principal, @PathVariable UUID id) {

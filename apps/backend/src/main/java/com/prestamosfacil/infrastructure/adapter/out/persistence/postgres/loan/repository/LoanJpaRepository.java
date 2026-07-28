@@ -12,6 +12,7 @@ import java.util.UUID;
 @Repository
 public interface LoanJpaRepository extends JpaRepository<LoanEntity, UUID>, JpaSpecificationExecutor<LoanEntity> {
     Optional<LoanEntity> findByLoanApplicationId(UUID loanApplicationId);
+    Optional<LoanEntity> findByIdAndCustomerId(UUID id, UUID customerId);
     @Query("SELECT COUNT(l), COALESCE(SUM(l.principalAmount), 0) FROM LoanEntity l WHERE l.approvedAt IS NOT NULL AND l.status = 'APPROVED'")
     List<Object[]> getTotalApprovedAggregation();
     @Query("SELECT COUNT(l), COALESCE(SUM(l.principalAmount), 0), COALESCE(AVG(l.annualInterestRate), 0) FROM LoanEntity l WHERE l.status = 'APPROVED'")

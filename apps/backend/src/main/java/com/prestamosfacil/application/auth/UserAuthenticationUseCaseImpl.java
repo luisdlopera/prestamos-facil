@@ -142,11 +142,15 @@ public class UserAuthenticationUseCaseImpl implements UserAuthUseCase {
         }
         String sub = (String) claims.get("sub");
         if (sub == null) throw new ApplicationException(Messages.AUTH_TOKEN_INVALID);
+        UUID tokenUserId;
+        try { tokenUserId = UUID.fromString(sub); }
+        catch (IllegalArgumentException ex) { throw new ApplicationException(Messages.AUTH_TOKEN_INVALID); }
 
         String tokenHash = hashCalculator.sha256(refreshTokenValue);
         var existingToken = refreshTokenRepository.findByTokenHash(tokenHash);
 
         if (existingToken.isEmpty() || !existingToken.get().isValid()) {
+            // Deliberadamente no se revela si el token expiró, fue revocado o nunca existió.
             throw new ApplicationException(Messages.AUTH_SESSION_EXPIRED);
         }
 
@@ -156,6 +160,7 @@ public class UserAuthenticationUseCaseImpl implements UserAuthUseCase {
         String email = (String) claims.get("email");
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ApplicationException(Messages.AUTH_USER_NOT_FOUND));
+        if (!user.getId().equals(tokenUserId)) throw new ApplicationException(Messages.AUTH_TOKEN_INVALID);
 
         return buildLoginResult(user);
     }

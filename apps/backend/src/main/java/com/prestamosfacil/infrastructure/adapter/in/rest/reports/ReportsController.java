@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/v1/reports")
@@ -25,6 +26,7 @@ public class ReportsController {
     }
 
     @GetMapping("/approved-loans/total")
+    @PreAuthorize("hasAuthority('REPORT_APPROVED_LOANS_READ')")
     @Operation(summary = SwaggerDocs.OP_REPORT_APPROVED_TOTAL_SUM, description = SwaggerDocs.OP_REPORT_APPROVED_TOTAL_DESC)
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = SwaggerDocs.RESP_REPORT_APPROVED_200)
     public ResponseEntity<ApiResponse<ApprovedLoansTotalResponse>> getTotalApproved() {

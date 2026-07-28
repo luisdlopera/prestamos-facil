@@ -7,7 +7,9 @@ import java.time.Instant;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,7 @@ public class OutboxEventWorker {
     private final OutboxEventJpaRepository outboxEventJpaRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final ObjectMapper objectMapper;
+    private OutboxEventWorker self;
 
     public OutboxEventWorker(OutboxEventJpaRepository outboxEventJpaRepository,
                               ApplicationEventPublisher applicationEventPublisher,
@@ -27,6 +30,16 @@ public class OutboxEventWorker {
         this.outboxEventJpaRepository = outboxEventJpaRepository;
         this.applicationEventPublisher = applicationEventPublisher;
         this.objectMapper = objectMapper;
+        this.self = this;
+    }
+
+    // Self-reference re-injected as the Spring AOP proxy so calls to
+    // processEvent() from within this class go through the proxy and its
+    // @Transactional boundary actually applies (self-invocation otherwise
+    // bypasses the proxy, leaving no active session for lazy associations).
+    @Autowired
+    public void setSelf(@Lazy OutboxEventWorker self) {
+        this.self = self;
     }
 
     @Scheduled(fixedDelay = 10_000)
@@ -66,7 +79,7 @@ public class OutboxEventWorker {
 
     private void processBatch(List<OutboxEventEntity> events) {
         for (OutboxEventEntity event : events) {
-            processEvent(event);
+            self.processEvent(event);
         }
     }
 }

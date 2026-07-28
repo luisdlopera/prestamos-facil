@@ -39,6 +39,9 @@ public class LoanApplicationRepositoryAdapter implements LoanApplicationReposito
     }
 
     @Override public Optional<LoanApplication> findById(UUID id) { return jpaRepository.findById(id).flatMap(this::toDomain); }
+    @Override public Optional<LoanApplication> findByIdAndCustomerId(UUID id, UUID customerId) {
+        return jpaRepository.findByIdAndCustomerId(id, customerId).flatMap(this::toDomain);
+    }
 
     @Override public LoanApplication save(LoanApplication application) {
         LoanApplicationEntity entity = jpaRepository.findById(application.getId()).map(e -> toEntity(application, e)).orElseGet(() -> toEntity(application, new LoanApplicationEntity()));

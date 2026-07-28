@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -80,6 +81,7 @@ public class LoanApplicationUseCaseImpl implements LoanApplicationUseCase {
     }
 
     @Override
+    @PreAuthorize("hasAnyAuthority('LOAN_APPLICATION_CREATE_SELF','LOAN_APPLICATION_CREATE_FOR_CUSTOMER')")
     @Transactional
     public LoanApplication createApplication(UUID customerId, UUID loanTypeId,
                                               BigDecimal requestedAmount, int termInMonths) {
@@ -116,22 +118,33 @@ public class LoanApplicationUseCaseImpl implements LoanApplicationUseCase {
     }
 
     @Override
+    @PreAuthorize("hasAnyAuthority('LOAN_APPLICATION_READ_SELF','LOAN_APPLICATION_READ_ALL')")
+    @Transactional(readOnly = true)
     public Optional<LoanApplication> findById(UUID id) {
         return loanApplicationRepository.findById(id);
     }
 
     @Override
+    @PreAuthorize("hasAuthority('LOAN_APPLICATION_READ_SELF')")
+    @Transactional(readOnly = true)
     public Optional<LoanApplication> findByIdForUser(UUID applicationId, UUID customerId) {
-        return loanApplicationRepository.findById(applicationId)
-            .filter(app -> app.getCustomer().getId().equals(customerId));
+        // El puerto con alcance es la ruta normal; el fallback mantiene compatibilidad
+        // con adaptadores legacy y vuelve a verificar propiedad antes de devolver datos.
+        return loanApplicationRepository.findByIdAndCustomerId(applicationId, customerId)
+            .or(() -> loanApplicationRepository.findById(applicationId)
+                .filter(app -> app.getCustomer().getId().equals(customerId)));
     }
 
     @Override
+    @PreAuthorize("hasAuthority('LOAN_APPLICATION_READ_ALL')")
+    @Transactional(readOnly = true)
     public PageResult<LoanApplication> findAll(int page, int perPage, String sortBy, String sortDir) {
         return loanApplicationRepository.findAll(page, perPage, sortBy, sortDir);
     }
 
     @Override
+    @PreAuthorize("hasAnyAuthority('LOAN_APPLICATION_READ_SELF','LOAN_APPLICATION_READ_ALL')")
+    @Transactional(readOnly = true)
     public PageResult<LoanApplication> findByFilters(UUID customerId, String statusCode, String search, int page, int perPage, String sortBy, String sortDir) {
         return loanApplicationRepository.findByFilters(customerId, statusCode, search, page, perPage, sortBy, sortDir);
     }
@@ -155,18 +168,21 @@ public class LoanApplicationUseCaseImpl implements LoanApplicationUseCase {
     }
 
     @Override
+    @PreAuthorize("hasAuthority('LOAN_APPLICATION_APPROVE')")
     @Transactional
     public LoanApplication approve(UUID id) {
         return manualDecision(id, ManualDecision.APPROVE, null);
     }
 
     @Override
+    @PreAuthorize("hasAuthority('LOAN_APPLICATION_REJECT')")
     @Transactional
     public LoanApplication reject(UUID id, String reason) {
         return manualDecision(id, ManualDecision.REJECT, reason);
     }
 
     @Override
+    @PreAuthorize("hasAuthority('LOAN_APPLICATION_EVALUATE')")
     @Transactional
     public AutomaticEvaluationOutcome evaluateAutomatically(UUID applicationId) {
         LoanApplication application = loanApplicationRepository.findById(applicationId)

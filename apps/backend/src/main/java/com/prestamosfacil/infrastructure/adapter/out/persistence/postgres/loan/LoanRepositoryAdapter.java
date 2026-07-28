@@ -31,6 +31,9 @@ public class LoanRepositoryAdapter implements LoanRepository {
     }
 
     @Override public Optional<Loan> findById(UUID id) { return jpaRepository.findById(id).flatMap(this::toDomain); }
+    @Override public Optional<Loan> findByIdAndCustomerId(UUID id, UUID customerId) {
+        return jpaRepository.findByIdAndCustomerId(id, customerId).flatMap(this::toDomain);
+    }
     @Override public Optional<Loan> findByLoanApplicationId(UUID id) { return jpaRepository.findByLoanApplicationId(id).flatMap(this::toDomain); }
 
     @Override public Loan save(Loan loan) {

@@ -32,6 +32,7 @@ class AuthIntegrationTest {
     @Autowired
     private CustomerRepository customerRepository;
 
+
     @Test
     void registerAndLoginAndRefresh() {
         LoginResult registerResult = authenticationUseCase.registerCustomer("Juan", "Perez",
@@ -123,4 +124,5 @@ class AuthIntegrationTest {
         updated = profileUseCase.updateProfile(id, null, null, null, "updatedemail@test.com");
         assertEquals("updatedemail@test.com", updated.getEmail().getValue());
     }
+
 }

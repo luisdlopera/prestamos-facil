@@ -10,6 +10,7 @@ import java.util.UUID;
 public interface LoanRepository {
 
     Optional<Loan> findById(UUID id);
+    Optional<Loan> findByIdAndCustomerId(UUID id, UUID customerId);
     Optional<Loan> findByLoanApplicationId(UUID loanApplicationId);
     Loan save(Loan loan);
     PageResult<Loan> findAll(int page, int perPage, String sortBy, String sortDir);
