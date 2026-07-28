@@ -185,7 +185,13 @@ La prueba `AutomaticLoanEvaluationAdapterIntegrationTest` utiliza PostgreSQL rea
 
 ## Credenciales demo
 
-Las credenciales dependen del seed configurado en el entorno. Para desarrollo local se encuentran en las migraciones/seed y deben cambiarse antes de cualquier despliegue.
+Credenciales para desarrollo local. **Deben cambiarse antes de cualquier despliegue a producción.**
+
+| Usuario | Email | Rol | Contraseña |
+|---------|-------|-----|------------|
+| Admin | admin@prestamosfacil.com | ADMIN | `!Pass.1234` |
+| Asesor de Crédito | analista@prestamosfacil.com | ANALYST | `!Pass.1234` |
+| Cliente Demo | cliente@prestamosfacil.com | CUSTOMER | `!Pass.1234` |
 
 ## Estado de calidad
 
