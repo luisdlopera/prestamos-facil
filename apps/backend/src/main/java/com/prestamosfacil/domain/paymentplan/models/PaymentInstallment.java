@@ -1,7 +1,6 @@
 package com.prestamosfacil.domain.paymentplan.models;
 
 import com.prestamosfacil.domain.shared.Money;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import java.time.LocalDate;
@@ -9,7 +8,6 @@ import java.util.UUID;
 
 @Getter
 @Builder
-@AllArgsConstructor
 public class PaymentInstallment {
 
     @Builder.Default
@@ -22,6 +20,20 @@ public class PaymentInstallment {
     private final Money principalAmount;
     private final Money interestAmount;
     private final Money closingBalance;
+
+    public PaymentInstallment(UUID id, UUID loanId, int installmentNumber, LocalDate dueDate,
+                              Money openingBalance, Money paymentAmount, Money principalAmount,
+                              Money interestAmount, Money closingBalance) {
+        this.id = id != null ? id : UUID.randomUUID();
+        this.loanId = loanId;
+        this.installmentNumber = installmentNumber;
+        this.dueDate = dueDate;
+        this.openingBalance = openingBalance;
+        this.paymentAmount = paymentAmount;
+        this.principalAmount = principalAmount;
+        this.interestAmount = interestAmount;
+        this.closingBalance = closingBalance;
+    }
 
     public PaymentInstallment(UUID loanId, int installmentNumber, LocalDate dueDate, Money openingBalance,
                               Money paymentAmount, Money principalAmount, Money interestAmount, Money closingBalance) {

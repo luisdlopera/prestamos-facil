@@ -3,6 +3,7 @@ package com.prestamosfacil.infrastructure.adapter.out.event;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.prestamosfacil.infrastructure.adapter.out.persistence.postgres.shared.OutboxEventEntity;
 import com.prestamosfacil.infrastructure.adapter.out.persistence.postgres.shared.OutboxEventJpaRepository;
+import com.prestamosfacil.infrastructure.configuration.JacksonConfiguration;
 import java.time.Instant;
 import java.util.List;
 import org.slf4j.Logger;
@@ -30,6 +31,7 @@ public class OutboxEventWorker {
         this.outboxEventJpaRepository = outboxEventJpaRepository;
         this.applicationEventPublisher = applicationEventPublisher;
         this.objectMapper = objectMapper;
+        JacksonConfiguration.configure(this.objectMapper);
         this.self = this;
     }
 
