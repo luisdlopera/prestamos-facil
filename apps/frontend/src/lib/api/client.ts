@@ -9,11 +9,7 @@ const MAX_RETRIES = 1;
 const RETRYABLE_STATUSES = [408, 429, 500, 502, 503, 504];
 const RETRY_DELAY_MS = 500;
 
-const REFRESH_PATHS = [
-  "/auth/refresh",
-  "/auth/login",
-  "/auth/logout",
-];
+const REFRESH_PATHS = ["/auth/refresh", "/auth/login", "/auth/logout"];
 
 let refreshPromise: Promise<boolean> | null = null;
 
@@ -136,8 +132,7 @@ async function attemptTokenRefresh(): Promise<boolean> {
       return false;
     } catch {
       return false;
-    }
-    finally {
+    } finally {
       refreshPromise = null;
     }
   })();

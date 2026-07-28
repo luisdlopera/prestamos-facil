@@ -33,4 +33,3 @@ export function LoanTypeTermsNotice({ loanType }: LoanTypeTermsNoticeProps) {
     </div>
   );
 }
-

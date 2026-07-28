@@ -204,11 +204,7 @@ export function LoanTypesManagementPage() {
         render: (row) => (
           <div className="flex items-center gap-2">
             <span className="font-bold text-slate-800">{row.interestRate}%</span>
-            <Chip
-              size="sm"
-              variant="primary"
-              className="font-bold text-xs"
-            >
+            <Chip size="sm" variant="primary" className="font-bold text-xs">
               {row.rateType || "EA"}
             </Chip>
           </div>

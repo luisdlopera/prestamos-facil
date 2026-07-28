@@ -14,14 +14,7 @@ import {
   TextField,
   useFilter,
 } from "@heroui/react";
-import {
-  FilePlus,
-  RotateCcw,
-  User,
-  Wallet,
-  Calculator,
-  CheckCircle2,
-} from "lucide-react";
+import { FilePlus, RotateCcw, User, Wallet, Calculator, CheckCircle2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loanApplicationSchema } from "@/lib/schemas";
@@ -46,15 +39,16 @@ export function CreateLoanApplicationPage() {
   const [customers, setCustomers] = useState<CustomerDto[]>([]);
   const [loanTypes, setLoanTypes] = useState<LoanTypeDto[]>([]);
 
-  const { control, handleSubmit, reset, watch, setValue, setError } = useForm<LoanApplicationFormData>({
-    resolver: zodResolver(loanApplicationSchema),
-    defaultValues: {
-      customerId: "",
-      loanTypeId: "",
-      requestedAmount: 0,
-      termInMonths: 0,
-    },
-  });
+  const { control, handleSubmit, reset, watch, setValue, setError } =
+    useForm<LoanApplicationFormData>({
+      resolver: zodResolver(loanApplicationSchema),
+      defaultValues: {
+        customerId: "",
+        loanTypeId: "",
+        requestedAmount: 0,
+        termInMonths: 0,
+      },
+    });
 
   const [applicationResult, setApplicationResult] = useState<LoanApplicationDto | null>(null);
   const [showResultModal, setShowResultModal] = useState(false);
@@ -313,9 +307,7 @@ export function CreateLoanApplicationPage() {
                 )}
               />
 
-              {selectedLoanType && (
-                <LoanTypeTermsNotice loanType={selectedLoanType} />
-              )}
+              {selectedLoanType && <LoanTypeTermsNotice loanType={selectedLoanType} />}
             </div>
 
             {/* Sección 3: Monto y Plazo */}

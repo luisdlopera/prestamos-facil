@@ -75,8 +75,10 @@ const normalizeDecimal = (str: string) => str.replace(",", ".");
 function validateForm(formData: FormState): Record<string, string> {
   const errors: Record<string, string> = {};
   if (!formData.name.trim()) errors.name = "El nombre es obligatorio.";
-  else if (formData.name.trim().length > 100) errors.name = "El nombre no puede exceder 100 caracteres.";
-  if (formData.description.trim().length > 500) errors.description = "La descripción no puede exceder 500 caracteres.";
+  else if (formData.name.trim().length > 100)
+    errors.name = "El nombre no puede exceder 100 caracteres.";
+  if (formData.description.trim().length > 500)
+    errors.description = "La descripción no puede exceder 500 caracteres.";
 
   const rate = parseFloat(normalizeDecimal(formData.interestRate));
   if (!Number.isFinite(rate) || rate < 0 || rate > 100) {
@@ -92,7 +94,8 @@ function validateForm(formData: FormState): Record<string, string> {
   }
 
   const minTerm = parseInt(formData.minTermMonths, 10);
-  if (!Number.isFinite(minTerm) || minTerm < 1) errors.minTermMonths = "Plazo mínimo inválido (mín. 1).";
+  if (!Number.isFinite(minTerm) || minTerm < 1)
+    errors.minTermMonths = "Plazo mínimo inválido (mín. 1).";
 
   const maxTerm = parseInt(formData.maxTermMonths, 10);
   if (!Number.isFinite(maxTerm) || maxTerm < minTerm) {

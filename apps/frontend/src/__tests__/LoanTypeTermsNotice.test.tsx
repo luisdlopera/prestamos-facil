@@ -33,4 +33,3 @@ describe("LoanTypeTermsNotice", () => {
     expect(screen.getByText(/Plazo permitido de/)).toHaveTextContent("1 mes a 1 mes");
   });
 });
-

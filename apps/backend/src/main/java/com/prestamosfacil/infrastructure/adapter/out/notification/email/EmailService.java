@@ -21,17 +21,43 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
     private final SpringTemplateEngine templateEngine;
+    private final ResendEmailSender resendEmailSender;
 
     @Value("${spring.mail.username:noreply@prestamosfacil.local}")
     private String senderEmail;
 
-    public EmailService(JavaMailSender mailSender, SpringTemplateEngine templateEngine) {
+    public EmailService(JavaMailSender mailSender, SpringTemplateEngine templateEngine,
+                        ResendEmailSender resendEmailSender) {
         this.mailSender = mailSender;
         this.templateEngine = templateEngine;
+        this.resendEmailSender = resendEmailSender;
     }
 
     public void send(String to, String subject, EmailTemplateDTO templateDto, String templateName,
                      Map<String, Object> extraVariables) {
+        Context context = new Context();
+        context.setVariable("title", templateDto.getTitle());
+        context.setVariable("subtitle", templateDto.getSubtitle());
+        context.setVariable("content", templateDto.getContent());
+        context.setVariable("footer", templateDto.getFooter());
+
+        if (templateDto.getAction() != null) {
+            context.setVariable("action", templateDto.getAction());
+        }
+
+        if (extraVariables != null) {
+            for (Map.Entry<String, Object> entry : extraVariables.entrySet()) {
+                context.setVariable(entry.getKey(), entry.getValue());
+            }
+        }
+
+        String htmlBody = templateEngine.process(templateName, context);
+
+        if (resendEmailSender.isEnabled()) {
+            resendEmailSender.send(senderEmail, to, subject, htmlBody);
+            return;
+        }
+
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(
@@ -39,24 +65,6 @@ public class EmailService {
                 MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED,
                 StandardCharsets.UTF_8.name()
             );
-
-            Context context = new Context();
-            context.setVariable("title", templateDto.getTitle());
-            context.setVariable("subtitle", templateDto.getSubtitle());
-            context.setVariable("content", templateDto.getContent());
-            context.setVariable("footer", templateDto.getFooter());
-
-            if (templateDto.getAction() != null) {
-                context.setVariable("action", templateDto.getAction());
-            }
-
-            if (extraVariables != null) {
-                for (Map.Entry<String, Object> entry : extraVariables.entrySet()) {
-                    context.setVariable(entry.getKey(), entry.getValue());
-                }
-            }
-
-            String htmlBody = templateEngine.process(templateName, context);
 
             helper.setTo(to);
             helper.setSubject(subject);

@@ -13,8 +13,9 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const setUser = useAuthStore((s) => s.setUser);
   const redirectUrlRef = useRef("/my-loans");
-  const registered = typeof window !== "undefined"
-    && new URLSearchParams(window.location.search).get("registered") === "1";
+  const registered =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("registered") === "1";
 
   const { run, isLoading } = useAsyncAction({
     successMsg: "Inicio de sesión exitoso",
@@ -43,8 +44,10 @@ export function LoginPage() {
     <Card className="w-full max-w-sm border-0 shadow-lg">
       <Card.Header>
         <Card.Title className="text-xl">Iniciar Sesión</Card.Title>
-      <Card.Description>Ingrese sus credenciales para acceder al sistema</Card.Description>
-      {registered && <p className="text-sm text-green-700">Registro exitoso. Ahora inicie sesión.</p>}
+        <Card.Description>Ingrese sus credenciales para acceder al sistema</Card.Description>
+        {registered && (
+          <p className="text-sm text-green-700">Registro exitoso. Ahora inicie sesión.</p>
+        )}
       </Card.Header>
       <Card.Content>
         <form onSubmit={handleSubmit} className="space-y-4">

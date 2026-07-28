@@ -35,9 +35,10 @@ const DatetimeCell: React.FC<CellRendererProps> = ({ value, column }) => {
   }
 
   const valueString = String(value);
-  const date = column.type === "date" && /^\d{4}-\d{2}-\d{2}$/.test(valueString)
-    ? new Date(`${valueString}T12:00:00`)
-    : new Date(valueString);
+  const date =
+    column.type === "date" && /^\d{4}-\d{2}-\d{2}$/.test(valueString)
+      ? new Date(`${valueString}T12:00:00`)
+      : new Date(valueString);
   if (Number.isNaN(date.getTime())) {
     return <span className="text-danger-500">Invalid Date</span>;
   }
