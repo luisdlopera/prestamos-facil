@@ -3,6 +3,15 @@ app:
     cookie:
       secure: true
 
+spring:
+  mail:
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 springdoc:
   api-docs:
     enabled: false
