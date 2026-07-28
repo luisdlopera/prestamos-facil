@@ -5,6 +5,7 @@ import { Button, Card, Input, InputGroup, Label, TextField } from "@heroui/react
 import { Eye, EyeOff } from "lucide-react";
 import { useAuthStore } from "@/lib/stores/auth.store";
 import { useAsyncAction } from "@/lib/errors";
+import { useSlowRequestHint } from "@/lib/hooks/useSlowRequestHint";
 import { loginUnified } from "../infrastructure/auth-service";
 
 export function LoginPage() {
@@ -23,6 +24,7 @@ export function LoginPage() {
       window.location.href = redirectUrlRef.current;
     },
   });
+  const isSlow = useSlowRequestHint(isLoading);
 
   const handleSubmit = useCallback(
     (e: React.SyntheticEvent<HTMLFormElement>) => {
@@ -87,6 +89,11 @@ export function LoginPage() {
           <Button type="submit" fullWidth isPending={isLoading}>
             Iniciar Sesión
           </Button>
+          {isSlow && (
+            <p className="text-xs text-gray-500 text-center">
+              Esto puede tardar unos segundos si el servidor estaba inactivo…
+            </p>
+          )}
         </form>
         <div className="mt-4 flex justify-between text-sm">
           <a href="/auth/forgot-password" className="text-blue-600 hover:underline">

@@ -14,9 +14,10 @@ import {
   TextField,
 } from "@heroui/react";
 import { Eye, EyeOff } from "lucide-react";
-import { post } from "@/lib/api/client";
+import { COLD_START_TIMEOUT, post } from "@/lib/api/client";
 import { useAuthStore } from "@/lib/stores/auth.store";
 import { useAsyncAction } from "@/lib/errors";
+import { useSlowRequestHint } from "@/lib/hooks/useSlowRequestHint";
 import { registerSchema } from "../schemas/register.schema";
 
 const DOCUMENT_TYPES = [
@@ -50,6 +51,7 @@ export function RegisterPage() {
       window.location.href = "/login?registered=1";
     },
   });
+  const isSlow = useSlowRequestHint(isLoading);
 
   const handleSubmit = useCallback(
     (e: React.SyntheticEvent<HTMLFormElement>) => {
@@ -68,15 +70,19 @@ export function RegisterPage() {
       }
 
       run(async () => {
-        await post("/auth/register", {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          documentType: formData.documentType,
-          documentNumber: formData.documentNumber,
-          baseSalary: parseFloat(formData.baseSalary),
-          password: formData.password,
-        });
+        await post(
+          "/auth/register",
+          {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            documentType: formData.documentType,
+            documentNumber: formData.documentNumber,
+            baseSalary: parseFloat(formData.baseSalary),
+            password: formData.password,
+          },
+          { timeout: COLD_START_TIMEOUT },
+        );
       });
     },
     [formData, run],
@@ -252,6 +258,11 @@ export function RegisterPage() {
           <Button type="submit" fullWidth isPending={isLoading}>
             Registrarse
           </Button>
+          {isSlow && (
+            <p className="text-xs text-gray-500 text-center">
+              Esto puede tardar unos segundos si el servidor estaba inactivo…
+            </p>
+          )}
         </form>
         <div className="mt-4 text-center">
           <a href="/login" className="text-blue-600 hover:underline text-sm">

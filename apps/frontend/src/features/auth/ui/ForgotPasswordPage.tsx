@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { Button, Card, Input, Label, TextField } from "@heroui/react";
-import { post } from "@/lib/api/client";
+import { COLD_START_TIMEOUT, post } from "@/lib/api/client";
 import { useAsyncAction } from "@/lib/errors";
+import { useSlowRequestHint } from "@/lib/hooks/useSlowRequestHint";
 import { PasswordInput } from "./components/PasswordInput";
 
 function validatePassword(password: string): string | null {
@@ -46,10 +47,13 @@ export function ForgotPasswordPage() {
     },
   });
 
+  const isSlowRequest = useSlowRequestHint(isLoadingRequest);
+  const isSlowConfirm = useSlowRequestHint(isLoadingConfirm);
+
   const handleRequestReset = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     runRequest(async () => {
-      await post("/auth/password-reset/request", { email });
+      await post("/auth/password-reset/request", { email }, { timeout: COLD_START_TIMEOUT });
     });
   };
 
@@ -62,10 +66,11 @@ export function ForgotPasswordPage() {
       return;
     }
     runConfirm(async () => {
-      await post("/auth/password-reset/confirm", {
-        token: resetToken,
-        newPassword,
-      });
+      await post(
+        "/auth/password-reset/confirm",
+        { token: resetToken, newPassword },
+        { timeout: COLD_START_TIMEOUT },
+      );
     });
   };
 
@@ -96,6 +101,11 @@ export function ForgotPasswordPage() {
             <Button type="submit" fullWidth isPending={isLoadingRequest}>
               Enviar enlace de recuperación
             </Button>
+            {isSlowRequest && (
+              <p className="text-xs text-gray-500 text-center">
+                Esto puede tardar unos segundos si el servidor estaba inactivo…
+              </p>
+            )}
           </form>
         )}
         {step === "sent" && (
@@ -121,6 +131,11 @@ export function ForgotPasswordPage() {
             <Button type="submit" fullWidth isPending={isLoadingConfirm}>
               Confirmar nueva contraseña
             </Button>
+            {isSlowConfirm && (
+              <p className="text-xs text-gray-500 text-center">
+                Esto puede tardar unos segundos si el servidor estaba inactivo…
+              </p>
+            )}
           </form>
         )}
         <div className="mt-4 text-center">

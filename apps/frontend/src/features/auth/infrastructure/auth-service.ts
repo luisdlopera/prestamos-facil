@@ -1,4 +1,4 @@
-import { get, patch, post } from "@/lib/api/client";
+import { COLD_START_TIMEOUT, get, patch, post } from "@/lib/api/client";
 import { useAuthStore } from "@/lib/stores/auth.store";
 
 interface LoginRequest {
@@ -50,7 +50,9 @@ export interface UnifiedLoginResult {
 }
 
 export async function loginUnified(data: LoginRequest): Promise<UnifiedLoginResult> {
-  const response = await post<LoginResponsePayload>("/auth/login", data);
+  const response = await post<LoginResponsePayload>("/auth/login", data, {
+    timeout: COLD_START_TIMEOUT,
+  });
   const res = response.data;
   if (!res) throw new Error("Credenciales inválidas. Revisa tu correo y contraseña.");
 

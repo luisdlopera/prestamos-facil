@@ -5,6 +5,11 @@ import { normalizeApiError, handleNetworkError, ApiError } from "../errors";
 import { isPublicPath } from "../constants";
 
 const DEFAULT_TIMEOUT = 15_000;
+
+// Render's free tier spins the backend down after ~15 min idle; waking it
+// back up can take several minutes. Auth calls likely to be the first
+// request after inactivity use this longer timeout instead.
+export const COLD_START_TIMEOUT = 180_000;
 const MAX_RETRIES = 1;
 const RETRYABLE_STATUSES = [408, 429, 500, 502, 503, 504];
 const RETRY_DELAY_MS = 500;
