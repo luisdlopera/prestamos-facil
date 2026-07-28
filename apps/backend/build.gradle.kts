@@ -122,6 +122,7 @@ tasks.jacocoTestCoverageVerification {
                 "com.prestamosfacil",
                 "com.prestamosfacil.infrastructure.configuration",
                 "com.prestamosfacil.infrastructure.security.ratelimit",
+                "com.prestamosfacil.infrastructure.security.permissions",
                 "com.prestamosfacil.infrastructure.adapter.out.persistence.postgres",
                 "com.prestamosfacil.infrastructure.adapter.out.persistence.postgres.*",
                 "com.prestamosfacil.infrastructure.adapter.out.notification",

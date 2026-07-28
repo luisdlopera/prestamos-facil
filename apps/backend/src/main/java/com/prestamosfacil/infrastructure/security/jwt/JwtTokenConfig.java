@@ -4,7 +4,9 @@ import com.prestamosfacil.infrastructure.configuration.properties.JwtProperties;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import java.time.Duration;
+import java.util.Arrays;
 import javax.crypto.SecretKey;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,7 +16,14 @@ public class JwtTokenConfig {
     private final Duration refreshTtl;
     private final long allowedClockSkewSeconds;
 
-    public JwtTokenConfig(JwtProperties properties) {
+    public JwtTokenConfig(JwtProperties properties, Environment environment) {
+        boolean isProd = Arrays.asList(environment.getActiveProfiles()).contains("prod");
+        String explicitSecret = System.getenv("JWT_SECRET");
+        if (isProd && (explicitSecret == null || explicitSecret.isBlank())) {
+            throw new IllegalStateException(
+                "JWT_SECRET environment variable must be set explicitly when running with the 'prod' profile. " +
+                "Refusing to start with the default/dev JWT secret in production.");
+        }
         byte[] bytes = null;
         try { bytes = Decoders.BASE64URL.decode(properties.jwtSecret()); }
         catch (Exception e) { try { bytes = Decoders.BASE64.decode(properties.jwtSecret()); } catch (Exception ex) {} }

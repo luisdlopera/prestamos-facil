@@ -27,6 +27,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import com.prestamosfacil.infrastructure.security.permissions.Permissions;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -100,6 +101,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             userType = UserType.CUSTOMER;
             authorities.add(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
         }
+
+        String effectiveRole = userType == UserType.CUSTOMER ? "CUSTOMER" : user.getRole();
+        Permissions.forRole(effectiveRole).stream()
+            .map(SimpleGrantedAuthority::new)
+            .forEach(authorities::add);
 
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(

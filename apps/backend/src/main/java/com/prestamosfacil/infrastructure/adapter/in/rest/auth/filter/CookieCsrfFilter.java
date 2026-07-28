@@ -6,6 +6,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,10 +39,10 @@ public class CookieCsrfFilter extends OncePerRequestFilter {
             String referer = req.getHeader("Referer");
 
             boolean validOrigin = origin != null && allowedOrigins.stream()
-                .anyMatch(o -> origin.equals(o.trim()));
+                .anyMatch(o -> matchesOrigin(origin, o.trim()));
 
             boolean validReferer = referer != null && allowedOrigins.stream()
-                .anyMatch(o -> referer.startsWith(o.trim() + "/") || referer.equals(o.trim()));
+                .anyMatch(o -> matchesOrigin(referer, o.trim()));
 
             if (!validOrigin && !validReferer) {
                 res.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -53,5 +55,24 @@ public class CookieCsrfFilter extends OncePerRequestFilter {
         }
 
         chain.doFilter(req, res);
+    }
+
+    /**
+     * Compares scheme+host+port only, via URI parsing, to avoid string-prefix bypasses
+     * (e.g. Referer: https://attacker.com/https://trusted.com/ matching a startsWith check).
+     */
+    private boolean matchesOrigin(String candidate, String allowedOrigin) {
+        try {
+            URI candidateUri = new URI(candidate);
+            URI allowedUri = new URI(allowedOrigin);
+            if (candidateUri.getScheme() == null || candidateUri.getHost() == null) {
+                return false;
+            }
+            return candidateUri.getScheme().equalsIgnoreCase(allowedUri.getScheme())
+                && candidateUri.getHost().equalsIgnoreCase(allowedUri.getHost())
+                && candidateUri.getPort() == allowedUri.getPort();
+        } catch (URISyntaxException e) {
+            return false;
+        }
     }
 }

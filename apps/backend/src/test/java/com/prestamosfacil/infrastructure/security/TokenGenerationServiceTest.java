@@ -5,6 +5,7 @@ import com.prestamosfacil.infrastructure.security.jwt.JwtTokenConfig;
 import com.prestamosfacil.infrastructure.security.jwt.TokenGenerationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.env.MockEnvironment;
 
 import java.util.UUID;
 
@@ -18,7 +19,8 @@ class TokenGenerationServiceTest {
     void setUp() {
         JwtTokenConfig config = new JwtTokenConfig(new JwtProperties(
             "dGVzdC1zZWNyZXQta2V5LWZvci1qd3QtMzA0NS0yNTYtYml0", 15, 7, 30,
-            new JwtProperties.Cookie(false, "Lax", "prestamos_access", "prestamos_refresh", "/", true)));
+            new JwtProperties.Cookie(false, "Lax", "prestamos_access", "prestamos_refresh", "/", true)),
+            new MockEnvironment());
         tokenGenerationService = new TokenGenerationService(config);
     }
 
