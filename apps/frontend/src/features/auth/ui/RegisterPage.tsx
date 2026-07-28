@@ -19,16 +19,6 @@ import { useAuthStore } from "@/lib/stores/auth.store";
 import { useAsyncAction } from "@/lib/errors";
 import { registerSchema } from "../schemas/register.schema";
 
-interface RegisterResponseData {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  documentType: string;
-  documentNumber: string;
-  baseSalary: number;
-}
-
 const DOCUMENT_TYPES = [
   { key: "CC", label: "Cédula de Ciudadanía" },
   { key: "CE", label: "Cédula de Extranjería" },
@@ -49,12 +39,15 @@ export function RegisterPage() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const setUser = useAuthStore((s) => s.setUser);
+  const clearUser = useAuthStore((s) => s.clearUser);
 
   const { run, isLoading } = useAsyncAction({
     successMsg: "Registro exitoso",
     onSuccess: () => {
-      window.location.href = "/dashboard";
+      // /auth/register no crea sesión: el backend no devuelve access token ni refresh cookie.
+      // El usuario debe autenticarse explícitamente en el login.
+      clearUser();
+      window.location.href = "/login?registered=1";
     },
   });
 
@@ -75,7 +68,7 @@ export function RegisterPage() {
       }
 
       run(async () => {
-        const response = await post<RegisterResponseData>("/auth/register", {
+        await post("/auth/register", {
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
@@ -84,20 +77,9 @@ export function RegisterPage() {
           baseSalary: parseFloat(formData.baseSalary),
           password: formData.password,
         });
-        if (response.data) {
-          setUser(
-            {
-              id: response.data.id,
-              name: `${response.data.firstName} ${response.data.lastName}`,
-              email: response.data.email,
-              roles: [],
-            },
-            "customer",
-          );
-        }
       });
     },
-    [formData, run, setUser],
+    [formData, run],
   );
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

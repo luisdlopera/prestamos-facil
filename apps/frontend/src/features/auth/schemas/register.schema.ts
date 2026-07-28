@@ -36,7 +36,7 @@ export const registerSchema = z.object({
     .min(8, "La contraseña debe tener al menos 8 caracteres")
     .regex(/[A-Z]/, "La contraseña debe incluir una mayúscula")
     .regex(/[0-9]/, "La contraseña debe incluir un número")
-    .regex(/[!@#$%^&*]/, "La contraseña debe incluir un carácter especial (!@#$%^&*)"),
+    .regex(/[!@#$%^&+=]/, "La contraseña debe incluir un carácter especial (!@#$%^&+=)"),
 });
 
 export type RegisterFormData = z.infer<typeof registerSchema>;

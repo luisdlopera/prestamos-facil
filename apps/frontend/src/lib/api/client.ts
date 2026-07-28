@@ -75,6 +75,7 @@ async function request<T>(
         if (refreshed) {
           return request<T>(method, path, body, options, retryCount + 1);
         }
+        useAuthStore.getState().clearUser();
         const currentPath = window.location.pathname;
         if (!isPublicPath(currentPath)) {
           window.location.href = "/login";

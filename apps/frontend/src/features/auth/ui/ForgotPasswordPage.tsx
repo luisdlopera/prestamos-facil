@@ -10,7 +10,7 @@ function validatePassword(password: string): string | null {
   if (password.length < 8) return "La contraseña debe tener al menos 8 caracteres";
   if (!/[A-Z]/.test(password)) return "Debe incluir una mayúscula";
   if (!/[0-9]/.test(password)) return "Debe incluir un número";
-  if (!/[!@#$%^&*]/.test(password)) return "Debe incluir un carácter especial (!@#$%^&*)";
+  if (!/[!@#$%^&+=]/.test(password)) return "Debe incluir un carácter especial (!@#$%^&+=)";
   return null;
 }
 
@@ -19,7 +19,7 @@ export function ForgotPasswordPage() {
   const [resetToken, setResetToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [step, setStep] = useState<"request" | "confirm">("request");
+  const [step, setStep] = useState<"request" | "confirm" | "sent">("request");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -33,7 +33,7 @@ export function ForgotPasswordPage() {
   const { run: runRequest, isLoading: isLoadingRequest } = useAsyncAction({
     successMsg: "Si el correo existe, recibirá un enlace de recuperación",
     onSuccess: () => {
-      setStep("confirm");
+      setStep("sent");
     },
   });
 
@@ -74,11 +74,13 @@ export function ForgotPasswordPage() {
       <Card.Header>
         <Card.Title className="text-xl">Recuperar Contraseña</Card.Title>
         <Card.Description>
-          {step === "request" ? "Ingrese su correo electrónico" : "Ingrese su nueva contraseña"}
+          {step === "request" && "Ingrese su correo electrónico"}
+          {step === "sent" && "Revise su bandeja de entrada"}
+          {step === "confirm" && "Ingrese su nueva contraseña"}
         </Card.Description>
       </Card.Header>
       <Card.Content>
-        {step === "request" ? (
+        {step === "request" && (
           <form onSubmit={handleRequestReset} className="space-y-4">
             <TextField isRequired>
               <Label className="text-sm font-medium text-black">Correo electrónico</Label>
@@ -95,7 +97,15 @@ export function ForgotPasswordPage() {
               Enviar enlace de recuperación
             </Button>
           </form>
-        ) : (
+        )}
+        {step === "sent" && (
+          <p className="text-sm text-gray-600">
+            Si el correo existe en nuestro sistema, recibirá un enlace de recuperación en los
+            próximos minutos. Haga clic en el enlace del correo para continuar y definir su nueva
+            contraseña.
+          </p>
+        )}
+        {step === "confirm" && (
           <form onSubmit={handleConfirmReset} className="space-y-4">
             <PasswordInput
               id="newPassword"

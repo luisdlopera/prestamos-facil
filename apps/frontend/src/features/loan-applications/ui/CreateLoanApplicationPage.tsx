@@ -21,7 +21,6 @@ import {
   Wallet,
   Calculator,
   CheckCircle2,
-  AlertCircle,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,6 +37,7 @@ import { TypedController } from "@/components/ui/TypedController";
 import { useAuthStore } from "@/lib/stores/auth.store";
 import { formatCurrency } from "@/lib/formatters/currency";
 import { LoanApplicationResultModal } from "./LoanApplicationResultModal";
+import { LoanTypeTermsNotice } from "./components/LoanTypeTermsNotice";
 
 export function CreateLoanApplicationPage() {
   const { contains } = useFilter({ sensitivity: "base" });
@@ -46,7 +46,7 @@ export function CreateLoanApplicationPage() {
   const [customers, setCustomers] = useState<CustomerDto[]>([]);
   const [loanTypes, setLoanTypes] = useState<LoanTypeDto[]>([]);
 
-  const { control, handleSubmit, reset, watch, setValue } = useForm<LoanApplicationFormData>({
+  const { control, handleSubmit, reset, watch, setValue, setError } = useForm<LoanApplicationFormData>({
     resolver: zodResolver(loanApplicationSchema),
     defaultValues: {
       customerId: "",
@@ -142,9 +142,39 @@ export function CreateLoanApplicationPage() {
 
   const onSubmit = useCallback(
     (data: LoanApplicationFormData) => {
+      if (selectedLoanType) {
+        let hasValidationError = false;
+
+        if (data.requestedAmount < selectedLoanType.minAmount) {
+          setError("requestedAmount", {
+            message: `El monto mínimo permitido es ${formatCurrency(selectedLoanType.minAmount)}`,
+          });
+          hasValidationError = true;
+        } else if (data.requestedAmount > selectedLoanType.maxAmount) {
+          setError("requestedAmount", {
+            message: `El monto máximo permitido es ${formatCurrency(selectedLoanType.maxAmount)}`,
+          });
+          hasValidationError = true;
+        }
+
+        if (data.termInMonths < selectedLoanType.minTermMonths) {
+          setError("termInMonths", {
+            message: `El plazo mínimo permitido es ${selectedLoanType.minTermMonths} meses`,
+          });
+          hasValidationError = true;
+        } else if (data.termInMonths > selectedLoanType.maxTermMonths) {
+          setError("termInMonths", {
+            message: `El plazo máximo permitido es ${selectedLoanType.maxTermMonths} meses`,
+          });
+          hasValidationError = true;
+        }
+
+        if (hasValidationError) return;
+      }
+
       run(() => createLoanApplication(data));
     },
-    [run],
+    [run, selectedLoanType, setError],
   );
 
   const handleReset = useCallback(() => {
@@ -284,23 +314,7 @@ export function CreateLoanApplicationPage() {
               />
 
               {selectedLoanType && (
-                <div className="flex items-start gap-2 rounded-xl bg-blue-50/80 border border-blue-100 p-3 text-xs text-blue-900">
-                  <AlertCircle className="size-4 text-blue-600 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-semibold">{selectedLoanType.name}:</span> Monto permitido
-                    desde{" "}
-                    <span className="font-bold">{formatCurrency(selectedLoanType.minAmount)}</span>{" "}
-                    hasta{" "}
-                    <span className="font-bold">{formatCurrency(selectedLoanType.maxAmount)}</span>{" "}
-                    con tasa del{" "}
-                    <span className="font-bold">{selectedLoanType.interestRate}% anual</span>.
-                    {selectedLoanType.automaticValidationEnabled && (
-                      <span className="ml-1 font-semibold text-emerald-700">
-                        (Aprobación automática disponible)
-                      </span>
-                    )}
-                  </div>
-                </div>
+                <LoanTypeTermsNotice loanType={selectedLoanType} />
               )}
             </div>
 
