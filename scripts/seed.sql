@@ -50,11 +50,11 @@ VALUES
 ON CONFLICT (name) DO NOTHING;
 
 -- 5. Seed Users (All account passwords: !Pass.1234 -> $2b$12$kEdmixFOOPiHyH3G1eRG3uQT2GLg.lUdUbaSzc8Rb7OnTeHSl9x.K)
-INSERT INTO users (id, name, first_name, last_name, email, password_hash, document_type, document_number, base_salary, role, enabled, failed_login_attempts, blocked_until)
+INSERT INTO users (id, email, password_hash, role, enabled)
 VALUES
-    ('f1a2b3c4-d5e6-4789-a0b1-c2d3e4f5a6b7', 'Admin Sistema', 'Admin', 'Sistema', 'admin@prestamosfacil.com', '$2b$12$kEdmixFOOPiHyH3G1eRG3uQT2GLg.lUdUbaSzc8Rb7OnTeHSl9x.K', 'CC', 'DOC-ADMIN', 0.00, 'ADMIN', TRUE, 0, NULL),
-    ('a2b3c4d5-e6f7-4890-b1c2-d3e4f5a6b7c8', 'Asesor de Crédito', 'Asesor', 'Crédito', 'analista@prestamosfacil.com', '$2b$12$kEdmixFOOPiHyH3G1eRG3uQT2GLg.lUdUbaSzc8Rb7OnTeHSl9x.K', 'CC', 'DOC-ANALYST', 0.00, 'ANALYST', TRUE, 0, NULL),
-    ('a3c4d5e6-f7a8-4901-c2d3-e4f5a6b7c8d9', 'Juan Pérez', 'Juan', 'Pérez', 'cliente@prestamosfacil.com', '$2b$12$kEdmixFOOPiHyH3G1eRG3uQT2GLg.lUdUbaSzc8Rb7OnTeHSl9x.K', 'CC', '1234567890', 3500000.00, 'CUSTOMER', TRUE, 0, NULL)
+    ('f1a2b3c4-d5e6-4789-a0b1-c2d3e4f5a6b7', 'admin@prestamosfacil.com', '$2b$12$kEdmixFOOPiHyH3G1eRG3uQT2GLg.lUdUbaSzc8Rb7OnTeHSl9x.K', 'ADMIN', TRUE),
+    ('a2b3c4d5-e6f7-4890-b1c2-d3e4f5a6b7c8', 'analista@prestamosfacil.com', '$2b$12$kEdmixFOOPiHyH3G1eRG3uQT2GLg.lUdUbaSzc8Rb7OnTeHSl9x.K', 'ANALYST', TRUE),
+    ('a3c4d5e6-f7a8-4901-c2d3-e4f5a6b7c8d9', 'cliente@prestamosfacil.com', '$2b$12$kEdmixFOOPiHyH3G1eRG3uQT2GLg.lUdUbaSzc8Rb7OnTeHSl9x.K', 'CUSTOMER', TRUE)
 ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash;
 
 -- 6. Seed User Roles
@@ -66,29 +66,38 @@ INSERT INTO user_roles (user_id, role_id)
 SELECT u.id, r.id FROM users u, roles r WHERE u.email = 'analista@prestamosfacil.com' AND r.name = 'ANALYST'
 ON CONFLICT DO NOTHING;
 
+-- 6b. Seed Customer profile linked to the demo customer's user account
+INSERT INTO customers (id, user_id, first_name, last_name, document_type, document_number, base_salary)
+VALUES (
+    'c1a2b3c4-d5e6-4789-a0b1-c2d3e4f5a6b8',
+    'a3c4d5e6-f7a8-4901-c2d3-e4f5a6b7c8d9',
+    'Juan', 'Pérez', 'CC', '1234567890', 3500000.00
+)
+ON CONFLICT (user_id) DO NOTHING;
+
 -- 7. Seed Loan Application
-INSERT INTO loan_applications (id, customer_id, loan_type_id, requested_amount, term_in_months, status, created_at, updated_at)
+INSERT INTO loan_applications (id, customer_id, loan_type_id, requested_amount, term_in_months, annual_interest_rate, created_at, updated_at)
 VALUES (
     'd1a2b3c4-d5e6-4789-a0b1-c2d3e4f5a6b9',
-    'a3c4d5e6-f7a8-4901-c2d3-e4f5a6b7c8d9',
+    'c1a2b3c4-d5e6-4789-a0b1-c2d3e4f5a6b8',
     'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
     10000000.00,
     12,
-    'APPROVED',
+    18.50,
     NOW(),
     NOW()
 )
 ON CONFLICT (id) DO NOTHING;
 
 -- 8. Seed Status History
-INSERT INTO loan_application_status_history (id, loan_application_id, status, decision_reason, evaluated_at, evaluated_by, created_at, updated_at)
+INSERT INTO loan_application_status_history (id, loan_application_id, status, decision_reason, evaluated_by, opened_at, created_at, updated_at)
 VALUES (
     'f2a3b4c5-d6e7-4890-b1c2-d3e4f5a6b7c9',
     'd1a2b3c4-d5e6-4789-a0b1-c2d3e4f5a6b9',
     'APPROVED',
     'Aprobado automáticamente por perfil crediticio óptimo',
-    NOW(),
     NULL,
+    NOW(),
     NOW(),
     NOW()
 )
@@ -98,7 +107,7 @@ INSERT INTO loans (id, loan_application_id, customer_id, principal_amount, annua
 VALUES (
     'e1a2b3c4-d5e6-4789-a0b1-c2d3e4f5a6c0',
     'd1a2b3c4-d5e6-4789-a0b1-c2d3e4f5a6b9',
-    'a3c4d5e6-f7a8-4901-c2d3-e4f5a6b7c8d9',
+    'c1a2b3c4-d5e6-4789-a0b1-c2d3e4f5a6b8',
     10000000.00,
     18.50,
     12,

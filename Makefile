@@ -1,7 +1,7 @@
 -include .env
 export
 
-.PHONY: dev api start stop db-seed backend backend-test backend-check frontend-install frontend frontend-check frontend-test frontend-build frontend-lint frontend-format test clean
+.PHONY: dev api start stop down db-seed backend backend-test backend-check frontend-install frontend frontend-check frontend-test frontend-build frontend-lint frontend-format test clean
 
 dev:
 	@echo "Starting development environment..."
@@ -11,7 +11,11 @@ start:
 	docker compose up -d
 
 stop:
+	@echo "Stopping frontend, backend, and containers..."
+	@if lsof -ti :4000,4001,4010,4011 > /dev/null 2>&1; then kill -9 $$(lsof -ti :4000,4001,4010,4011) 2>/dev/null || true; fi
 	docker compose down
+
+down: stop
 
 db-seed:
 	@bash scripts/seed-db.sh

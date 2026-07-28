@@ -83,22 +83,22 @@ Una aprobación genera el préstamo, sus cuotas y la notificación correspondien
 
 La API usa la base `/api/v1` y autenticación mediante cookies HttpOnly con tokens JWT.
 
-| Método | Endpoint | Acceso | Descripción |
-|---|---|---|---|
-| `POST` | `/auth/register` | Público | Registrar cliente con credenciales. |
-| `POST` | `/auth/login` | Público | Iniciar sesión. |
-| `POST` | `/auth/refresh` | Público | Renovar sesión. |
-| `POST` | `/staff/login` | Público | Iniciar sesión como personal. |
-| `POST` | `/customers` | Autenticado | Registrar cliente desde backoffice. |
-| `POST` | `/loan-applications` | Autenticado | Crear solicitud. El cliente usa su propia identidad; staff puede enviar `customerId`. |
-| `GET` | `/loan-applications` | Autenticado | Listar con `page`, `size`, `status`, `search`, `sortBy` y `sortDir`. |
-| `GET` | `/loan-applications/{id}` | Autenticado | Consultar una solicitud. |
-| `POST` | `/loan-applications/{id}/approve` | Staff | Aprobar manualmente. |
-| `POST` | `/loan-applications/{id}/reject` | Staff | Rechazar manualmente con motivo. |
-| `POST` | `/loan-applications/{id}/automatic-evaluation` | Staff | Ejecutar evaluación automática. |
-| `GET` | `/loans` | Autenticado | Listar préstamos. |
-| `GET` | `/loans/{id}/payment-plan` | Autenticado | Consultar plan de pagos. |
-| `GET` | `/reports/approved-loans/total` | Admin/Staff | Obtener monto total y cantidad de préstamos aprobados. |
+| Método | Endpoint | Descripción |
+|---|---|---|
+| `POST` | `/auth/register` | Registrar cliente. No inicia sesión; devuelve el perfil creado y el cliente debe continuar por `/login`. |
+| `POST` | `/auth/login` | Iniciar sesión. |
+| `POST` | `/auth/refresh` | Renovar sesión. |
+| `POST` | `/staff/login` | Iniciar sesión como personal. |
+| `POST` | `/customers` | Registrar cliente desde backoffice. |
+| `POST` | `/loan-applications` | El cliente siempre usa su identidad; staff autorizado puede enviar `customerId`. |
+| `GET` | `/loan-applications` | Listar con alcance aplicado antes de filtros y búsqueda. |
+| `GET` | `/loan-applications/{id}` | El detalle del cliente usa consulta por `id` y `customerId`. |
+| `POST` | `/loan-applications/{id}/approve` | Aprobar manualmente. |
+| `POST` | `/loan-applications/{id}/reject` | Rechazar manualmente con motivo. |
+| `POST` | `/loan-applications/{id}/automatic-evaluation` | Ejecutar evaluación automática. |
+| `GET` | `/loans` | Listar préstamos dentro del alcance autorizado. |
+| `GET` | `/loans/{id}/payment-plan` | Consultar plan de pagos. |
+| `GET` | `/reports/approved-loans/total` | Obtener monto total y cantidad de préstamos aprobados. |
 
 El contrato completo está disponible en Swagger.
 
@@ -119,6 +119,18 @@ apps/backend/src/main/java/com/prestamosfacil/
 ```
 
 Las migraciones Flyway se encuentran en `apps/backend/src/main/resources/db/migration`. El esquema final separa la identidad en `users` del perfil financiero y personal en `customers`, relacionado mediante `customers.user_id`. Las consultas de autenticación usan `users`; las consultas de clientes usan `customers`.
+
+## Seguridad implementada
+
+- Las authorities explícitas se derivan del rol persistido (`CUSTOMER`, `ANALYST`, `SUPERVISOR`, `AUDITOR`, `ADMIN`); `ROLE_STAFF` por sí solo no concede operaciones crediticias.
+- La autorización se valida en `SecurityFilterChain`, controladores y casos de uso mediante `@PreAuthorize`.
+- Los clientes no pueden cambiar `customerId`, listar recursos ajenos ni consultar préstamos o planes de pago ajenos. Los detalles se resuelven con consultas JPA acotadas por propietario.
+- Las transiciones terminales se rechazan por regla de dominio; solicitudes y préstamos tienen `@Version`, y los conflictos se responden como `409`.
+- Los refresh tokens se almacenan como SHA-256, expiran, rotan en cada uso, se revocan al cerrar sesión y se consumen bajo bloqueo pesimista para impedir dos usos concurrentes.
+- Login, registro y refresh tienen rate limiting por IP y endpoint. Las cookies son `HttpOnly`, `Secure` fuera de perfiles locales y están protegidas por validación de `Origin`/`Referer` en operaciones sensibles.
+- El DTO de creación de clientes no acepta rol, authorities, estado interno, actor, tenant ni campos de auditoría; esos valores son responsabilidad del backend.
+
+La matriz completa de permisos y la evidencia de auditoría se mantienen en [`docs/audit-informe-completo.md`](docs/audit-informe-completo.md).
 
 ## Base de datos
 
