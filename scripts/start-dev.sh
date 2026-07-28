@@ -65,7 +65,7 @@ echo "PostgreSQL is healthy."
 BACKEND_PORT=$(find_port "$HTTP_PORT" "$HTTP_PORT_FALLBACK")
 echo "==> Starting backend on port $BACKEND_PORT..."
 cd apps/backend
-SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun --args="--server.port=$BACKEND_PORT" &
+SPRING_PROFILES_ACTIVE="${SPRING_PROFILES_ACTIVE:-dev,email}" ./gradlew bootRun --args="--server.port=$BACKEND_PORT" &
 BACKEND_PID=$!
 cd "$ROOT_DIR"
 

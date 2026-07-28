@@ -27,11 +27,11 @@ api:
 	@until docker compose exec -T postgres pg_isready -U "${DB_USERNAME:-prestamos}" -d "${DB_NAME:-prestamos_facil}" > /dev/null 2>&1; do sleep 2; done
 	@echo "PostgreSQL is healthy."
 	@if lsof -ti :4010 > /dev/null 2>&1; then echo "Freeing port 4010..."; kill -9 $$(lsof -ti :4010) 2>/dev/null || true; sleep 1; fi
-	cd apps/backend && DB_PORT=5432 SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
+	cd apps/backend && DB_PORT=5432 SPRING_PROFILES_ACTIVE="${SPRING_PROFILES_ACTIVE:-dev,email}" ./gradlew bootRun
 
 
 backend:
-	cd apps/backend && DB_PORT=5432 SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
+	cd apps/backend && DB_PORT=5432 SPRING_PROFILES_ACTIVE="${SPRING_PROFILES_ACTIVE:-dev,email}" ./gradlew bootRun
 
 backend-test:
 	cd apps/backend && ./gradlew clean test
