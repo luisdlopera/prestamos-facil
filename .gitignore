@@ -5,7 +5,7 @@ apps/backend/bin/
 apps/backend/out/
 *.jar
 *.war
-!gradle/wrapper/gradle-wrapper.jar
+!apps/backend/gradle/wrapper/gradle-wrapper.jar
 
 # --- Node / pnpm ---
 apps/frontend/node_modules/
