@@ -1,5 +1,69 @@
 # Auditoría Full-Stack — Préstamos Fácil
 
+## Auditoría de seguridad de endpoints — 2026-07-28 (segunda pasada)
+
+Auditoría enfocada en OWASP Top 10 sobre los filtros de autenticación/autorización y la configuración expuesta por la API REST del reto (registro de usuarios, solicitudes de préstamo, aprobación manual/automática, plan de pagos, reportes). Alcance: `LoginRateLimitFilter`, `CookieCsrfFilter`, `JwtTokenConfig`, `SecurityConfig`, `GlobalExceptionHandler`, configuración de Swagger/OpenAPI por perfil.
+
+### Hallazgos críticos corregidos
+
+| # | Categoría OWASP | Hallazgo | Archivo | Fix aplicado |
+|---|---|---|---|---|
+| 1 | A01 Broken Access Control | El rate limit de login/registro/refresh confiaba ciegamente en el header `X-Forwarded-For` enviado por el cliente. Un atacante que se conecta directamente (sin pasar por un proxy real) podía enviar un valor distinto de `X-Forwarded-For` en cada intento y evadir el límite de 20 intentos/15min, habilitando fuerza bruta sobre credenciales. | `LoginRateLimitFilter.java` | El header solo se honra si `remoteAddr` (IP real del socket) pertenece a una lista de proxies de confianza configurable (`app.security.trusted-proxies`). Sin esa lista configurada, siempre se usa la IP real de la conexión TCP. |
+| 2 | A04 Insecure Design | La validación CSRF sobre cookies (`/auth/refresh`, `/auth/logout`, `/staff/refresh`, `/staff/logout`) aceptaba un `Referer` que hiciera `startsWith(origenPermitido + "/")`. Un referer como `http://attacker.com/http://localhost:4000/` supera ese `startsWith` en ciertos parsers y podía colar peticiones cross-site contra los endpoints basados en cookie. | `CookieCsrfFilter.java` | El `Origin`/`Referer` ahora se parsean con `java.net.URI` y se comparan por `scheme` + `host` + `port` exactos contra el origen permitido, no por coincidencia de prefijo de string. |
+| 3 | A02 Cryptographic Failures | `application.yml` define un secreto JWT por defecto (`dev-secret-replace-in-production-at-least-32-chars`) que decodifica a 37 bytes válidos para HS256. Si se despliega en producción sin definir la variable de entorno `JWT_SECRET`, la aplicación arranca igual usando ese secreto público conocido en el repositorio, permitiendo forjar tokens de acceso/staff arbitrarios. | `JwtTokenConfig.java` | El arranque ahora falla (`IllegalStateException`) cuando el perfil activo es `prod` y la variable de entorno `JWT_SECRET` no está definida explícitamente, sin importar el valor por defecto de la propiedad. |
+
+### Hallazgos de configuración corregidos
+
+| # | Hallazgo | Fix aplicado |
+|---|---|---|
+| 4 | Swagger UI (`/swagger-ui/**`) y OpenAPI (`/v3/api-docs/**`) quedaban públicamente accesibles también en producción, exponiendo el mapa completo de la API a cualquier visitante no autenticado. | Se agregó `springdoc.api-docs.enabled=false` y `springdoc.swagger-ui.enabled=false` en `application-prod.yml`, desactivando los endpoints por completo bajo ese perfil. |
+
+### Hallazgos evaluados y no modificados (riesgo bajo, decisión consciente)
+
+- **`GlobalExceptionHandler`** expone `field` y `code` en errores 400 de validación. Se evaluó genérica-lo, pero es una práctica estándar de UX de API REST (el frontend depende de esos campos para resaltar inputs); no hay fuga de datos sensibles, solo nombres de campos del propio DTO público. Se deja sin cambios.
+- **Límite de sesiones concurrentes de staff** y **TTL explícito de password reset** quedan documentados como mejoras recomendadas (ver sección de recomendaciones), no bloquean el reto ni representan una vulnerabilidad explotable de forma directa hoy.
+
+### Pruebas añadidas/actualizadas
+
+- `LoginRateLimitFilterTest` (nuevo): reproduce el intento de bypass con `X-Forwarded-For` spoofeado desde un origen no confiable (debe seguir bloqueando por IP real) y el caso correcto de un proxy de confianza que sí debe poder diferenciar clientes reales detrás de él.
+- `CookieCsrfFilterTest` (nuevo): reproduce el referer ambiguo (`http://attacker.com/http://localhost:4000/...`) y confirma que ahora es rechazado con 403; valida los casos legítimos de `Origin`/`Referer` y el rechazo por puerto distinto.
+- `JwtTokenConfigTest`: se agregó caso que verifica que el arranque falla en perfil `prod` sin `JWT_SECRET` explícito; se actualizó la firma de construcción (ahora recibe `Environment`) en este archivo y en `TokenGenerationServiceTest`/`TokenValidationServiceTest`.
+- Verificación: `./gradlew compileJava` y `./gradlew test --tests "...auth.filter.*" --tests "...security.*"` — compilación limpia y suite en verde.
+
+### Recomendaciones pendientes (no bloqueantes)
+
+1. Limitar sesiones concurrentes de staff o asociar refresh tokens a dispositivo/fingerprint.
+2. Confirmar y, si falta, imponer un TTL corto (≤1h) explícito sobre el token de recuperación de contraseña en `PasswordResetUseCase`.
+3. Añadir logging de intentos de autenticación fallidos (actualmente el filtro no deja rastro estructurado más allá del contador en caché) para dar soporte a detección de fuerza bruta a nivel de observabilidad.
+4. Considerar pruebas de integración con `@SpringBootTest` + Testcontainers que carguen la cadena de filtros de Spring Security real y verifiquen escalación de privilegios extremo a extremo (cliente intentando aprobar/rechazar préstamos, acceder a datos de otro cliente, etc.); las pruebas actuales de este ciclo cubren los filtros en aislamiento.
+
+---
+
+> Actualización de seguridad aplicada el 2026-07-28. Este apartado supersede cualquier estado histórico que contradiga el código actual.
+
+## Correcciones de autenticación y autorización — 2026-07-28
+
+- Se reemplazó la autorización sensible basada únicamente en `ROLE_STAFF` por authorities explícitas: `CUSTOMER_CREATE`, `LOAN_APPLICATION_*`, `LOAN_READ_*`, `PAYMENT_PLAN_READ_*` y `REPORT_APPROVED_LOANS_READ`.
+- Se habilitó `@EnableMethodSecurity` y se agregaron comprobaciones equivalentes en controladores y casos de uso.
+- Las consultas de detalle de solicitudes y préstamos incluyen `customerId`; la verificación de propiedad ocurre también en la capa de aplicación.
+- Se preservó el control de alcance en listados: un cliente nunca puede convertir `customerId`, `search`, estado u ordenamiento en acceso fuera de su conjunto autorizado.
+- El registro de staff acepta únicamente `ANALYST`, `CREDIT_ANALYST`, `SUPERVISOR` o `AUDITOR`; `ADMIN` no puede autoconcederse mediante el DTO.
+- Refresh valida el tipo, expiración, hash persistido, identidad del `sub` y revocación. El registro JPA se bloquea durante el consumo para impedir doble rotación concurrente.
+- Rate limiting cubre login, registro y refresh por combinación de endpoint e IP.
+
+## Incidencia reproducida y corregida — clientes y recuperación
+
+- El `403` de clientes no era una falta de permiso del rol `CUSTOMER`: `JwtAuthFilter` ejecutaba `findByUserId`, cuyo `CustomerEntity.user` era lazy. El mapper accedía al correo después de cerrar la sesión JPA y lanzaba `LazyInitializationException`; el filtro no podía construir la autenticación.
+- `findByUserId` ahora usa `JOIN FETCH` y los listados de solicitudes se ejecutan dentro de una transacción de solo lectura, evitando el mismo fallo durante el mapeo batch.
+- La interfaz de recuperación del frontend aceptaba `*` como carácter especial, pero `PasswordPolicy` del backend no. Se alineó la validación para que ambos lados acepten exactamente `!@#$%^&+=`.
+- Se agregaron pruebas de integración para el lookup usado por JWT, el flujo de registro/login/refresh/password reset y pruebas del catálogo de permisos.
+
+## Registro sin sesión — contrato vigente
+
+`POST /auth/register` es deliberadamente un endpoint de alta, no de autenticación. Devuelve el perfil creado, pero no genera access token ni refresh cookie. El frontend limpia cualquier sesión previa y redirige a `/login?registered=1`; únicamente un login exitoso establece la sesión.
+
+Verificación: `./gradlew clean check` — 277 pruebas ejecutadas, 269 correctas y 8 de integración omitidas por ausencia de Docker/Testcontainers. Frontend: 26 pruebas correctas.
+
 **Fecha**: 2026-07-26  
 **Auditor**: Sistema de auditoría automatizada  
 **Versión del análisis**: 1.0  
